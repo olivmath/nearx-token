@@ -1,128 +1,112 @@
-import React, { useState } from 'react';
-import { useAuth } from '../contexts/AuthContext';
-import './Auth.css';
+import React, { useState } from 'react'
+import useAuthStore from '../store/authStore'
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './ui/card'
+import { Button } from './ui/button'
+import { Input } from './ui/input'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs'
 
 const Auth = () => {
-  const [isLogin, setIsLogin] = useState(true);
-  const [username, setUsername] = useState('');
-  const [error, setError] = useState('');
-  const { register, login, isLoading } = useAuth();
+  const [username, setUsername] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+  const { login, register } = useAuthStore()
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-
-    if (!username.trim() && !isLogin) {
-      setError('Por favor, insira um nome de usuário');
-      return;
+  const handleAuth = async (type) => {
+    if (!username.trim()) {
+      setError('Por favor, insira um nome de usuário')
+      return
     }
+
+    setLoading(true)
+    setError('')
 
     try {
-      let result;
-      if (isLogin) {
-        result = await login();
-      } else {
-        result = await register(username);
-      }
-
-      if (!result.success) {
-        setError(result.error || 'Erro na autenticação');
+      const success = type === 'login' ? await login(username) : await register(username)
+      if (!success) {
+        setError('Falha na autenticação. Tente novamente.')
       }
     } catch (err) {
-      setError('Erro inesperado. Verifique se seu dispositivo suporta Passkey.');
+      setError('Erro durante a autenticação: ' + err.message)
+    } finally {
+      setLoading(false)
     }
-  };
+  }
 
   return (
-    <div className="auth-container">
-      <div className="auth-card">
-        <div className="auth-header">
-          <h1>🔐 Blockchain Quiz</h1>
-          <p>Autenticação segura com Passkey</p>
-        </div>
-
-        <div className="auth-tabs">
-          <button
-            className={`tab ${isLogin ? 'active' : ''}`}
-            onClick={() => {
-              setIsLogin(true);
-              setError('');
-            }}
-          >
-            Login
-          </button>
-          <button
-            className={`tab ${!isLogin ? 'active' : ''}`}
-            onClick={() => {
-              setIsLogin(false);
-              setError('');
-            }}
-          >
-            Registro
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="auth-form">
-          {!isLogin && (
-            <div className="form-group">
-              <label htmlFor="username">Nome de Usuário</label>
-              <input
-                type="text"
-                id="username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="Digite seu nome de usuário"
-                required={!isLogin}
-              />
-            </div>
-          )}
-
-          {error && <div className="error-message">{error}</div>}
-
-          <button
-            type="submit"
-            className="auth-button"
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <span className="loading">⏳ Processando...</span>
-            ) : (
-              <span>
-                🔑 {isLogin ? 'Entrar com Passkey' : 'Registrar com Passkey'}
-              </span>
-            )}
-          </button>
-        </form>
-
-        <div className="auth-info">
-          <div className="info-item">
-            <span className="icon">🛡️</span>
-            <span>Autenticação biométrica segura</span>
-          </div>
-          <div className="info-item">
-            <span className="icon">🚀</span>
-            <span>Sem senhas para lembrar</span>
-          </div>
-          <div className="info-item">
-            <span className="icon">⚡</span>
-            <span>Login rápido e conveniente</span>
-          </div>
-        </div>
-
-        <div className="stellar-link">
-          <p>Explore o universo blockchain:</p>
-          <a
-            href="https://stellarexplorer.io"
-            target="_blank"
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-secondary to-accent p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl font-bold">Blockchain Quiz</CardTitle>
+          <CardDescription>Teste seus conhecimentos sobre blockchain</CardDescription>
+        </CardHeader>
+        
+        <CardContent>
+          <Tabs defaultValue="login" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="login">Login</TabsTrigger>
+              <TabsTrigger value="register">Registrar</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="login" className="space-y-4">
+              <div className="space-y-2">
+                <label htmlFor="username-login" className="text-sm font-medium">Nome de usuário</label>
+                <Input
+                  id="username-login"
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="Digite seu nome de usuário"
+                  disabled={loading}
+                />
+              </div>
+              {error && <div className="text-sm text-destructive">{error}</div>}
+              <Button 
+                onClick={() => handleAuth('login')} 
+                disabled={loading}
+                className="w-full"
+              >
+                {loading ? 'Processando...' : 'Entrar com Passkey'}
+              </Button>
+            </TabsContent>
+            
+            <TabsContent value="register" className="space-y-4">
+              <div className="space-y-2">
+                <label htmlFor="username-register" className="text-sm font-medium">Nome de usuário</label>
+                <Input
+                  id="username-register"
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="Digite seu nome de usuário"
+                  disabled={loading}
+                />
+              </div>
+              {error && <div className="text-sm text-destructive">{error}</div>}
+              <Button 
+                onClick={() => handleAuth('register')} 
+                disabled={loading}
+                className="w-full"
+              >
+                {loading ? 'Processando...' : 'Registrar com Passkey'}
+              </Button>
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+        
+        <CardFooter className="flex flex-col space-y-2 text-center">
+          <p className="text-xs text-muted-foreground">Powered by WebAuthn (Passkey)</p>
+          <a 
+            href="https://stellar.expert" 
+            target="_blank" 
             rel="noopener noreferrer"
-            className="stellar-button"
+            className="text-xs text-primary hover:underline"
           >
-            🌟 Stellar Explorer
+            Explore Stellar Network
           </a>
-        </div>
-      </div>
+        </CardFooter>
+      </Card>
     </div>
-  );
-};
+  )
+}
 
-export default Auth;
+export default Auth

@@ -1,25 +1,16 @@
-import React from 'react';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
-import Auth from './components/Auth';
-import Quiz from './components/Quiz';
-import './App.css';
-
-function AppContent() {
-  const { user } = useAuth();
-
-  return (
-    <div className="app">
-      {user ? <Quiz /> : <Auth />}
-    </div>
-  );
-}
+import React from 'react'
+import useAuthStore from './store/authStore'
+import Auth from './components/Auth'
+import Quiz from './components/Quiz'
 
 function App() {
+  const { isAuthenticated } = useAuthStore()
+
   return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
-  );
+    <div className="min-h-screen">
+      {isAuthenticated ? <Quiz /> : <Auth />}
+    </div>
+  )
 }
 
-export default App;
+export default App

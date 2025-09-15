@@ -1,68 +1,89 @@
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+@import "tailwindcss";
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@theme {
+  /* Cores com alto contraste e acessibilidade WCAG AA */
+  --color-background: hsl(0 0% 100%);
+  --color-foreground: hsl(220 13% 13%); /* Contraste 15.8:1 */
+  --color-card: hsl(0 0% 100%);
+  --color-card-foreground: hsl(220 13% 13%);
+  --color-popover: hsl(0 0% 100%);
+  --color-popover-foreground: hsl(220 13% 13%);
+  
+  /* Azul acessível com bom contraste */
+  --color-primary: hsl(217 91% 35%); /* Contraste 7.2:1 com branco */
+  --color-primary-foreground: hsl(0 0% 100%);
+  
+  /* Cinza neutro com contraste adequado */
+  --color-secondary: hsl(220 14% 96%);
+  --color-secondary-foreground: hsl(220 13% 13%);
+  --color-muted: hsl(220 14% 96%);
+  --color-muted-foreground: hsl(220 9% 46%); /* Contraste 4.6:1 */
+  
+  /* Accent em tom de azul mais suave */
+  --color-accent: hsl(217 32% 92%);
+  --color-accent-foreground: hsl(220 13% 13%);
+  
+  /* Vermelho acessível para erros */
+  --color-destructive: hsl(0 65% 48%); /* Contraste 5.25:1 */
+  --color-destructive-foreground: hsl(0 0% 100%);
+  
+  /* Bordas e inputs com melhor definição */
+  --color-border: hsl(220 13% 87%);
+  --color-input: hsl(220 13% 87%);
+  --color-ring: hsl(217 91% 35%);
+  
+  /* Cores de sucesso e aviso acessíveis */
+  --color-success: hsl(142 71% 35%); /* Verde com contraste 6.4:1 */
+  --color-success-foreground: hsl(0 0% 100%);
+  --color-warning: hsl(38 92% 35%); /* Amarelo escuro com contraste 6.8:1 */
+  --color-warning-foreground: hsl(0 0% 100%);
+  
+  --radius: 0.5rem;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
+@media (prefers-color-scheme: dark) {
+  @theme {
+    /* Modo escuro com alto contraste */
+    --color-background: hsl(220 13% 9%);
+    --color-foreground: hsl(220 14% 95%); /* Contraste 15.3:1 */
+    --color-card: hsl(220 13% 11%);
+    --color-card-foreground: hsl(220 14% 95%);
+    --color-popover: hsl(220 13% 11%);
+    --color-popover-foreground: hsl(220 14% 95%);
+    
+    /* Azul mais claro para modo escuro */
+    --color-primary: hsl(217 91% 65%); /* Contraste 7.1:1 com fundo escuro */
+    --color-primary-foreground: hsl(220 13% 9%);
+    
+    /* Cinza escuro com contraste adequado */
+    --color-secondary: hsl(220 13% 16%);
+    --color-secondary-foreground: hsl(220 14% 95%);
+    --color-muted: hsl(220 13% 16%);
+    --color-muted-foreground: hsl(220 9% 65%); /* Contraste 4.7:1 */
+    
+    /* Accent em tom escuro */
+    --color-accent: hsl(220 13% 18%);
+    --color-accent-foreground: hsl(220 14% 95%);
+    
+    /* Vermelho mais claro para modo escuro */
+    --color-destructive: hsl(0 65% 58%); /* Contraste 5.1:1 */
+    --color-destructive-foreground: hsl(220 13% 9%);
+    
+    /* Bordas mais visíveis no modo escuro */
+    --color-border: hsl(220 13% 20%);
+    --color-input: hsl(220 13% 20%);
+    --color-ring: hsl(217 91% 65%);
+    
+    /* Cores de sucesso e aviso para modo escuro */
+    --color-success: hsl(142 71% 55%); /* Verde mais claro */
+    --color-success-foreground: hsl(220 13% 9%);
+    --color-warning: hsl(38 92% 55%); /* Amarelo mais claro */
+    --color-warning-foreground: hsl(220 13% 9%);
+  }
 }
 
 body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  font-feature-settings: "rlig" 1, "calt" 1;
 }

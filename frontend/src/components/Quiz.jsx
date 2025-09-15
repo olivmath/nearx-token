@@ -1,221 +1,214 @@
-import React, { useState, useEffect } from 'react';
-import { getRandomQuestions } from '../data/questions';
-import { useAuth } from '../contexts/AuthContext';
-import './Quiz.css';
+import React, { useState } from 'react'
+import useAuthStore from '../store/authStore'
+import useQuizStore from '../store/quizStore'
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './ui/card'
+import { Button } from './ui/button'
 
 const Quiz = () => {
-  const [questions, setQuestions] = useState([]);
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedAnswer, setSelectedAnswer] = useState(null);
-  const [score, setScore] = useState(0);
-  const [showResult, setShowResult] = useState(false);
-  const [quizStarted, setQuizStarted] = useState(false);
-  const [answers, setAnswers] = useState([]);
-  const { user, logout } = useAuth();
+  const { user, logout } = useAuthStore()
+  const {
+    currentQuestions,
+    currentQuestionIndex,
+    score,
+    answers,
+    isQuizStarted,
+    isQuizCompleted,
+    startQuiz,
+    answerQuestion,
+    resetQuiz,
+    getCurrentQuestion
+  } = useQuizStore()
+  
+  const [selectedAnswer, setSelectedAnswer] = useState('')
 
-  const startQuiz = () => {
-    const randomQuestions = getRandomQuestions(5);
-    setQuestions(randomQuestions);
-    setCurrentQuestion(0);
-    setSelectedAnswer(null);
-    setScore(0);
-    setShowResult(false);
-    setQuizStarted(true);
-    setAnswers([]);
-  };
-
-  const handleAnswerSelect = (answerIndex) => {
-    setSelectedAnswer(answerIndex);
-  };
+  const handleAnswerSelect = (answer) => {
+    setSelectedAnswer(answer)
+  }
 
   const handleNextQuestion = () => {
-    const isCorrect = selectedAnswer === questions[currentQuestion].correct;
-    const newAnswers = [...answers, {
-      question: questions[currentQuestion].question,
-      selected: selectedAnswer,
-      correct: questions[currentQuestion].correct,
-      isCorrect
-    }];
-    setAnswers(newAnswers);
-
-    if (isCorrect) {
-      setScore(score + 1);
+    if (selectedAnswer) {
+      answerQuestion(selectedAnswer)
+      setSelectedAnswer('')
     }
-
-    if (currentQuestion + 1 < questions.length) {
-      setCurrentQuestion(currentQuestion + 1);
-      setSelectedAnswer(null);
-    } else {
-      setShowResult(true);
-    }
-  };
-
-  const resetQuiz = () => {
-    setQuizStarted(false);
-    setShowResult(false);
-    setCurrentQuestion(0);
-    setSelectedAnswer(null);
-    setScore(0);
-    setAnswers([]);
-  };
-
-  const getScoreMessage = () => {
-    const percentage = (score / 5) * 100;
-    if (percentage >= 80) return { message: "🏆 Excelente! Você é um expert em blockchain!", class: "excellent" };
-    if (percentage >= 60) return { message: "👍 Muito bom! Você tem um bom conhecimento sobre blockchain.", class: "good" };
-    if (percentage >= 40) return { message: "📚 Razoável. Continue estudando sobre blockchain!", class: "average" };
-    return { message: "💪 Precisa estudar mais. Não desista, blockchain é fascinante!", class: "poor" };
-  };
-
-  if (!quizStarted) {
-    return (
-      <div className="quiz-container">
-        <div className="quiz-welcome">
-          <div className="user-info">
-            <h2>Bem-vindo, {user?.name || 'Usuário'}! 👋</h2>
-            <button onClick={logout} className="logout-btn">Sair</button>
-          </div>
-          
-          <div className="welcome-content">
-            <h1>🧠 Quiz Blockchain</h1>
-            <p>Teste seus conhecimentos sobre blockchain com 5 perguntas selecionadas aleatoriamente!</p>
-            
-            <div className="quiz-info">
-              <div className="info-card">
-                <span className="icon">❓</span>
-                <div>
-                  <h3>5 Perguntas</h3>
-                  <p>Selecionadas aleatoriamente de um banco de 25 questões</p>
-                </div>
-              </div>
-              <div className="info-card">
-                <span className="icon">⏱️</span>
-                <div>
-                  <h3>Sem Limite de Tempo</h3>
-                  <p>Responda no seu próprio ritmo</p>
-                </div>
-              </div>
-              <div className="info-card">
-                <span className="icon">🏆</span>
-                <div>
-                  <h3>Pontuação Final</h3>
-                  <p>Veja seu desempenho ao final</p>
-                </div>
-              </div>
-            </div>
-            
-            <button onClick={startQuiz} className="start-quiz-btn">
-              🚀 Começar Quiz
-            </button>
-            
-            <div className="stellar-link">
-              <p>Explore mais sobre blockchain:</p>
-              <a
-                href="https://stellarexplorer.io"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="stellar-button"
-              >
-                🌟 Stellar Explorer
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
   }
 
-  if (showResult) {
-    const scoreInfo = getScoreMessage();
-    return (
-      <div className="quiz-container">
-        <div className="quiz-result">
-          <div className="result-header">
-            <h1>🎯 Resultado Final</h1>
-            <div className={`score-display ${scoreInfo.class}`}>
-              <span className="score-number">{score}/5</span>
-              <span className="score-percentage">({((score / 5) * 100).toFixed(0)}%)</span>
-            </div>
-            <p className={`score-message ${scoreInfo.class}`}>{scoreInfo.message}</p>
-          </div>
+  const handleResetQuiz = () => {
+    resetQuiz()
+    setSelectedAnswer('')
+  }
 
-          <div className="answers-review">
-            <h3>📋 Revisão das Respostas</h3>
-            {answers.map((answer, index) => (
-              <div key={index} className={`answer-item ${answer.isCorrect ? 'correct' : 'incorrect'}`}>
-                <div className="question-number">Pergunta {index + 1}</div>
-                <div className="question-text">{answer.question}</div>
-                <div className="answer-status">
-                  {answer.isCorrect ? (
-                    <span className="correct-badge">✅ Correto</span>
-                  ) : (
-                    <span className="incorrect-badge">❌ Incorreto</span>
+
+
+  if (!isQuizStarted) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-secondary to-accent p-4">
+        <Card className="w-full max-w-lg">
+          <CardHeader className="text-center">
+            <CardTitle className="text-3xl font-bold">🧠 Blockchain Quiz</CardTitle>
+            <CardDescription>Bem-vindo, <strong>{user?.username}</strong>!</CardDescription>
+          </CardHeader>
+          
+          <CardContent className="space-y-6">
+            <p className="text-center text-muted-foreground">
+              Teste seus conhecimentos sobre blockchain com 5 perguntas selecionadas aleatoriamente.
+            </p>
+            
+            <div className="grid grid-cols-1 gap-4">
+              <div className="flex items-center space-x-3 p-3 bg-accent border border-border rounded-lg">
+                <span className="text-2xl">📊</span>
+                <span className="text-sm font-medium">5 perguntas aleatórias</span>
+              </div>
+              <div className="flex items-center space-x-3 p-3 bg-accent border border-border rounded-lg">
+                <span className="text-2xl">⏱️</span>
+                <span className="text-sm font-medium">Sem limite de tempo</span>
+              </div>
+              <div className="flex items-center space-x-3 p-3 bg-accent border border-border rounded-lg">
+                <span className="text-2xl">🏆</span>
+                <span className="text-sm font-medium">Pontuação no final</span>
+              </div>
+            </div>
+          </CardContent>
+          
+          <CardFooter className="flex flex-col space-y-3">
+            <Button onClick={startQuiz} className="w-full">
+              🚀 Começar Quiz
+            </Button>
+            <Button onClick={logout} variant="outline" className="w-full">
+              🚪 Sair
+            </Button>
+          </CardFooter>
+        </Card>
+      </div>
+    )
+  }
+
+  if (isQuizCompleted) {
+    const percentage = Math.round((score / currentQuestions.length) * 100)
+    
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-secondary to-accent p-4">
+        <Card className="w-full max-w-2xl">
+          <CardHeader className="text-center">
+            <CardTitle className="text-3xl font-bold">🎯 Resultado do Quiz</CardTitle>
+          </CardHeader>
+          
+          <CardContent className="space-y-6">
+            <div className="text-center">
+              <div className="inline-flex items-center justify-center w-32 h-32 bg-primary text-primary-foreground rounded-full text-4xl font-bold mb-4">
+                {score}/{currentQuestions.length}
+              </div>
+              <p className="text-2xl font-semibold">{percentage}%</p>
+            </div>
+            
+            <div className="text-center">
+              {percentage >= 80 && <p className="text-primary font-semibold">🌟 Excelente! Você domina blockchain!</p>}
+              {percentage >= 60 && percentage < 80 && <p className="text-primary font-semibold">👍 Bom trabalho! Continue estudando!</p>}
+              {percentage >= 40 && percentage < 60 && <p className="text-muted-foreground font-semibold">📚 Você está no caminho certo!</p>}
+              {percentage < 40 && <p className="text-destructive font-semibold">💪 Continue estudando blockchain!</p>}
+            </div>
+
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">📋 Revisão das Respostas</h3>
+              {answers.map((answer, index) => (
+                <div key={index} className={`p-4 rounded-lg border-2 ${
+                  answer.isCorrect ? 'bg-accent border-primary/30' : 'bg-accent border-destructive/30'
+                }`}>
+                  <p className="font-medium mb-2"><strong>Q{index + 1}:</strong> {answer.question}</p>
+                  <p className="text-sm mb-1">
+                    <span className="font-medium">Sua resposta:</span> {answer.selectedAnswer}
+                    {answer.isCorrect ? ' ✅' : ' ❌'}
+                  </p>
+                  {!answer.isCorrect && (
+                    <p className="text-sm text-primary font-medium">
+                      <span className="font-medium">Resposta correta:</span> {answer.correctAnswer}
+                    </p>
                   )}
                 </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="result-actions">
-            <button onClick={resetQuiz} className="try-again-btn">
-              🔄 Tentar Novamente
-            </button>
-            <button onClick={logout} className="logout-btn">
-              👋 Sair
-            </button>
-          </div>
-        </div>
+              ))}
+            </div>
+          </CardContent>
+          
+          <CardFooter className="flex flex-col space-y-3">
+            <div className="flex space-x-3 w-full">
+              <Button onClick={handleResetQuiz} className="flex-1">
+                🔄 Fazer Novo Quiz
+              </Button>
+              <Button onClick={logout} variant="outline" className="flex-1">
+                🚪 Sair
+              </Button>
+            </div>
+            <a 
+              href="https://stellar.expert" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-sm text-blue-600 hover:text-blue-800 hover:underline font-medium"
+            >
+              🌟 Explore Stellar Network
+            </a>
+          </CardFooter>
+        </Card>
       </div>
-    );
+    )
   }
 
-  const currentQ = questions[currentQuestion];
-  const progress = ((currentQuestion + 1) / questions.length) * 100;
+  const currentQuestion = getCurrentQuestion()
+  
+  if (!currentQuestion) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">Carregando...</div>
+      </div>
+    )
+  }
 
   return (
-    <div className="quiz-container">
-      <div className="quiz-card">
-        <div className="quiz-header">
-          <div className="progress-info">
-            <span>Pergunta {currentQuestion + 1} de {questions.length}</span>
-            <span>Pontuação: {score}</span>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-secondary to-accent p-4">
+      <Card className="w-full max-w-2xl">
+        <CardHeader>
+          <div className="flex justify-between items-center mb-4">
+            <span className="text-sm text-muted-foreground">
+              Pergunta {currentQuestionIndex + 1} de {currentQuestions.length}
+            </span>
+            <span className="text-sm font-medium">Pontuação: {score}</span>
           </div>
-          <div className="progress-bar">
-            <div className="progress-fill" style={{ width: `${progress}%` }}></div>
+          <div className="w-full bg-secondary rounded-full h-2">
+            <div 
+              className="bg-primary h-2 rounded-full transition-all duration-300" 
+              style={{ width: `${((currentQuestionIndex + 1) / currentQuestions.length) * 100}%` }}
+            ></div>
           </div>
-        </div>
-
-        <div className="question-section">
-          <h2 className="question-text">{currentQ?.question}</h2>
+        </CardHeader>
+        
+        <CardContent className="space-y-6">
+          <CardTitle className="text-xl">{currentQuestion.question}</CardTitle>
           
-          <div className="options-list">
-            {currentQ?.options.map((option, index) => (
-              <button
+          <div className="space-y-3">
+            {currentQuestion.options.map((option, index) => (
+              <Button
                 key={index}
-                className={`option-btn ${
-                  selectedAnswer === index ? 'selected' : ''
-                }`}
-                onClick={() => handleAnswerSelect(index)}
+                variant={selectedAnswer === option ? "default" : "outline"}
+                className="w-full justify-start text-left h-auto p-4"
+                onClick={() => handleAnswerSelect(option)}
               >
-                <span className="option-letter">{String.fromCharCode(65 + index)}</span>
-                <span className="option-text">{option}</span>
-              </button>
+                <span className="font-bold mr-3">{String.fromCharCode(65 + index)}</span>
+                <span>{option}</span>
+              </Button>
             ))}
           </div>
-        </div>
-
-        <div className="quiz-actions">
-          <button
-            onClick={handleNextQuestion}
-            disabled={selectedAnswer === null}
-            className="next-btn"
+        </CardContent>
+        
+        <CardFooter>
+          <Button 
+            onClick={handleNextQuestion} 
+            disabled={!selectedAnswer}
+            className="w-full"
           >
-            {currentQuestion + 1 === questions.length ? '🏁 Finalizar' : '➡️ Próxima'}
-          </button>
-        </div>
-      </div>
+            {currentQuestionIndex === currentQuestions.length - 1 ? '🏁 Finalizar' : '➡️ Próxima'}
+          </Button>
+        </CardFooter>
+      </Card>
     </div>
-  );
+  )
 };
 
 export default Quiz;
